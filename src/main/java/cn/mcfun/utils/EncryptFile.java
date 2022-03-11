@@ -27,11 +27,8 @@ public class EncryptFile {
             result = "请求参数错误！";
         } else{
             UserInfo userInfo = new UserInfo();
-            if(eventJson.getJSONObject("queryString").getString("ip") != null){
-                userInfo.setIp(eventJson.getJSONObject("queryString").getString("ip"));
-            }
-            if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
-                userInfo.setContinuePass(eventJson.getJSONObject("queryString").getString("newpwd"));
+            if(eventJson.getJSONObject("queryString").getString("continuePass") != null){
+                userInfo.setContinuePass(eventJson.getJSONObject("queryString").getString("continuePass"));
             }
             userInfo.setCookie(new BasicCookieStore());
             String get = new GetRequest().sendGet(userInfo,"https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
@@ -61,7 +58,13 @@ public class EncryptFile {
         json.put("isBase64Encoded",false);
         json.put("statusCode",200);
         json.put("headers",JSONObject.parseObject("{\"Content-Type\":\"application/json;charset=utf-8\"}"));
-        json.put("body", JSON.toJSONString(JSONObject.parseObject(result), SerializerFeature.PrettyFormat));
+        try{
+            json.put("body", JSON.toJSONString(JSONObject.parseObject(result), SerializerFeature.PrettyFormat));
+        } catch (Exception e){
+
+        } finally {
+            json.put("body", result);
+        }
         System.out.println("--------------------记录数据3--------------------");
         System.out.println(result);
         System.out.println("------------------------------------------------------");
