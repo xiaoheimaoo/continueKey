@@ -10,10 +10,10 @@ public class UserInfo {
     String order;
     String file;
     String continueKey;
-    String continuePass;
+    String continuePass = null;
     String key;
     String pass;
-    String ip;
+    String ip = null;
 
     public UserInfo() {
     }

@@ -1,6 +1,5 @@
 package cn.mcfun.utils;
 
-import cn.mcfun.Main;
 import cn.mcfun.entity.UserInfo;
 import cn.mcfun.request.PostRequest;
 import com.alibaba.fastjson.JSONObject;
@@ -19,9 +18,9 @@ public class ContinueKeyLogin {
     public static String regist(UserInfo userInfo) {
         String lastAccessTime = String.valueOf(System.currentTimeMillis() / 1000L);
         List<BasicNameValuePair> params = new ArrayList();
-        params.add(new BasicNameValuePair("appVer", Main.appVer));
-        params.add(new BasicNameValuePair("dateVer", Main.dateVer));
-        params.add(new BasicNameValuePair("dataVer", Main.dataVer));
+        params.add(new BasicNameValuePair("appVer", EncryptFile.appVer));
+        params.add(new BasicNameValuePair("dateVer", EncryptFile.dateVer));
+        params.add(new BasicNameValuePair("dataVer", EncryptFile.dataVer));
         params.add(new BasicNameValuePair("idempotencyKey", UUID.randomUUID().toString().toLowerCase()));
         params.add(new BasicNameValuePair("lastAccessTime", lastAccessTime));
         params.add(new BasicNameValuePair("verCode", "e92c481b51ff8203344cf768b2f5bc84b14409bc2ad7084292c9370ea97621de"));
@@ -72,9 +71,9 @@ public class ContinueKeyLogin {
         params.add(new BasicNameValuePair("continuePass", userInfo.getPass()));
         params.add(new BasicNameValuePair("userId", userInfo.getUserId()));
         params.add(new BasicNameValuePair("authKey", userInfo.getAuthKey()));
-        params.add(new BasicNameValuePair("appVer", Main.appVer));
-        params.add(new BasicNameValuePair("dateVer", Main.dateVer));
-        params.add(new BasicNameValuePair("dataVer", Main.dataVer));
+        params.add(new BasicNameValuePair("appVer", EncryptFile.appVer));
+        params.add(new BasicNameValuePair("dateVer", EncryptFile.dateVer));
+        params.add(new BasicNameValuePair("dataVer", EncryptFile.dataVer));
         params.add(new BasicNameValuePair("idempotencyKey", UUID.randomUUID().toString().toLowerCase()));
         params.add(new BasicNameValuePair("continueType", "1"));
         params.add(new BasicNameValuePair("lastAccessTime", lastAccessTime));
@@ -131,18 +130,18 @@ public class ContinueKeyLogin {
     //登录账号第一步
     public static String topLogin(UserInfo userInfo) {
         String lastAccessTime = String.valueOf(System.currentTimeMillis() / 1000L);
-        String userState = String.valueOf(-Long.parseLong(lastAccessTime) >> 2 ^ Long.parseLong(userInfo.getUserId()) & Long.parseLong(Main.dataServerFolderCrc));
+        String userState = String.valueOf(-Long.parseLong(lastAccessTime) >> 2 ^ Long.parseLong(userInfo.getUserId()) & Long.parseLong(EncryptFile.dataServerFolderCrc));
         List<BasicNameValuePair> params = new ArrayList();
         params.add(new BasicNameValuePair("userId", userInfo.getUserId()));
         params.add(new BasicNameValuePair("authKey", userInfo.getAuthKey()));
-        params.add(new BasicNameValuePair("appVer", Main.appVer));
-        params.add(new BasicNameValuePair("dateVer", Main.dateVer));
+        params.add(new BasicNameValuePair("appVer", EncryptFile.appVer));
+        params.add(new BasicNameValuePair("dateVer", EncryptFile.dateVer));
         params.add(new BasicNameValuePair("lastAccessTime", lastAccessTime));
         params.add(new BasicNameValuePair("idempotencyKey", UUID.randomUUID().toString().toLowerCase()));
         params.add(new BasicNameValuePair("verCode", "723d93a599b6f10ef3085ff1131fa5679a91da924246b8ca40dded18eccaf3da"));
         params.add(new BasicNameValuePair("userState", userState));
-        params.add(new BasicNameValuePair("assetbundleFolder", Main.assetbundleFolder));
-        params.add(new BasicNameValuePair("dataVer", Main.dataVer));
+        params.add(new BasicNameValuePair("assetbundleFolder", EncryptFile.assetbundleFolder));
+        params.add(new BasicNameValuePair("dataVer", EncryptFile.dataVer));
         params.add(new BasicNameValuePair("isTerminalLogin", "1"));
         String sign = (new AuthCode()).getSign(userInfo, params);
         params.add(new BasicNameValuePair("authCode", sign));
@@ -184,12 +183,12 @@ public class ContinueKeyLogin {
         List<BasicNameValuePair> params = new ArrayList();
         params.add(new BasicNameValuePair("userId", userInfo.getUserId()));
         params.add(new BasicNameValuePair("authKey", userInfo.getAuthKey()));
-        params.add(new BasicNameValuePair("appVer", Main.appVer));
-        params.add(new BasicNameValuePair("dateVer", Main.dateVer));
+        params.add(new BasicNameValuePair("appVer", EncryptFile.appVer));
+        params.add(new BasicNameValuePair("dateVer", EncryptFile.dateVer));
         params.add(new BasicNameValuePair("idempotencyKey", UUID.randomUUID().toString().toLowerCase()));
         params.add(new BasicNameValuePair("lastAccessTime", lastAccessTime));
         params.add(new BasicNameValuePair("verCode", "723d93a599b6f10ef3085ff1131fa5679a91da924246b8ca40dded18eccaf3da"));
-        params.add(new BasicNameValuePair("dataVer", Main.dataVer));
+        params.add(new BasicNameValuePair("dataVer", EncryptFile.dataVer));
         String sign = (new AuthCode()).getSign(userInfo, params);
         params.add(new BasicNameValuePair("authCode", sign));
         String result = new PostRequest().sendPost(userInfo, "https://game.fate-go.jp/home/top?_userId=" + userInfo.getUserId(), params);
@@ -228,13 +227,16 @@ public class ContinueKeyLogin {
         String lastAccessTime = String.valueOf(System.currentTimeMillis() / 1000L);
         List<BasicNameValuePair> params = new ArrayList();
         int continuePass = new Random().nextInt(9999) % (9999 - 1000 + 1) + 1000;
+        if(userInfo.getContinuePass() != null){
+            continuePass = Integer.valueOf(userInfo.getContinuePass());
+        }
         userInfo.setContinuePass(String.valueOf(continuePass));
         params.add(new BasicNameValuePair("continuePass", String.valueOf(continuePass)));
         params.add(new BasicNameValuePair("userId", userInfo.getUserId()));
         params.add(new BasicNameValuePair("authKey", userInfo.getAuthKey()));
-        params.add(new BasicNameValuePair("appVer", Main.appVer));
-        params.add(new BasicNameValuePair("dateVer", Main.dateVer));
-        params.add(new BasicNameValuePair("dataVer", Main.dataVer));
+        params.add(new BasicNameValuePair("appVer", EncryptFile.appVer));
+        params.add(new BasicNameValuePair("dateVer", EncryptFile.dateVer));
+        params.add(new BasicNameValuePair("dataVer", EncryptFile.dataVer));
         params.add(new BasicNameValuePair("idempotencyKey", UUID.randomUUID().toString().toLowerCase()));
         params.add(new BasicNameValuePair("lastAccessTime", lastAccessTime));
         params.add(new BasicNameValuePair("verCode", "e92c481b51ff8203344cf768b2f5bc84b14409bc2ad7084292c9370ea97621de"));
@@ -250,18 +252,19 @@ public class ContinueKeyLogin {
             System.out.println("continueKey="+continueKey);
             System.out.println("continuePass="+continuePass);
             System.out.println("------------------------------------------------------");
-            String json = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"encryptFile\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\"}";
+            String json1 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"encryptFile\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"isNew\": false}";
+            String json2 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"encryptFile\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"isNew\": true}";
             File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
             try {
                 Writer write = new OutputStreamWriter(new FileOutputStream(readFile), StandardCharsets.UTF_8);
-                write.write(json);
+                write.write(json1);
                 write.flush();
                 write.close();
                 System.out.println("写入数据成功！");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return json;
+            return json2;
         } else {
             File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");

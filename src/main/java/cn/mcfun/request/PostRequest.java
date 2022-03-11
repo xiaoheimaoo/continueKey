@@ -24,9 +24,22 @@ import org.apache.http.util.EntityUtils;
 public class PostRequest {
     public String sendPost(UserInfo userInfo, String url, List<BasicNameValuePair> params) {
         CloseableHttpClient httpClient;
-        httpClient = HttpClients.custom()
+        HttpHost proxy;
+        if(userInfo.getIp() != null && !userInfo.getIp().equals("")){
+            proxy = new HttpHost(userInfo.getIp().split(":")[0], Integer.parseInt(userInfo.getIp().split(":")[1]));
+            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+            CredentialsProvider provider = new BasicCredentialsProvider();
+            provider.setCredentials(new AuthScope(proxy), new UsernamePasswordCredentials("fgo", "fgo"));
+            httpClient = HttpClients.custom()
+                    .setDefaultCookieStore(userInfo.getCookie())
+                    .setDefaultCredentialsProvider(provider)
+                    .setRoutePlanner(routePlanner)
+                    .build();
+        }else{
+            httpClient = HttpClients.custom()
                     .setDefaultCookieStore(userInfo.getCookie())
                     .build();
+        }
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("Connection", "keep-alive");
         httpPost.addHeader("Accept", "*/*");
