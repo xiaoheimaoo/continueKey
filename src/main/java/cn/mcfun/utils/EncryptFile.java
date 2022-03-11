@@ -27,9 +27,6 @@ public class EncryptFile {
             result = "请求参数错误！";
         } else{
             UserInfo userInfo = new UserInfo();
-            if(eventJson.getJSONObject("queryString").getString("continuePass") != null){
-                userInfo.setContinuePass(eventJson.getJSONObject("queryString").getString("continuePass"));
-            }
             userInfo.setCookie(new BasicCookieStore());
             String get = new GetRequest().sendGet(userInfo,"https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
             JSONObject res = JSONObject.parseObject(get);

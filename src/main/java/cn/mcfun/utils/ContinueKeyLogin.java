@@ -227,9 +227,6 @@ public class ContinueKeyLogin {
         String lastAccessTime = String.valueOf(System.currentTimeMillis() / 1000L);
         List<BasicNameValuePair> params = new ArrayList();
         int continuePass = new Random().nextInt(9999) % (9999 - 1000 + 1) + 1000;
-        if(userInfo.getContinuePass() != null){
-            continuePass = Integer.valueOf(userInfo.getContinuePass());
-        }
         userInfo.setContinuePass(String.valueOf(continuePass));
         params.add(new BasicNameValuePair("continuePass", String.valueOf(continuePass)));
         params.add(new BasicNameValuePair("userId", userInfo.getUserId()));
