@@ -96,7 +96,7 @@ public class ContinueKeyLogin {
             System.out.println("authKey="+authKey);
             System.out.println("secretKey="+secretKey);
             System.out.println("------------------------------------------------------");
-            String log = "{\"oldKey\":\""+userInfo.getKey()+"\",\"oldPwd\":\""+userInfo.getPass()+"\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}";
+            String log = "{\"data\":\"转换过程出现异常！请复制本条结果联系群主找回账号！\",\"oldKey\":\""+userInfo.getKey()+"\",\"oldPwd\":\""+userInfo.getPass()+"\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}";
             File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
             try {
                 Writer write = new OutputStreamWriter(new FileOutputStream(readFile), StandardCharsets.UTF_8);
