@@ -96,6 +96,17 @@ public class ContinueKeyLogin {
             System.out.println("authKey="+authKey);
             System.out.println("secretKey="+secretKey);
             System.out.println("------------------------------------------------------");
+            String log = "{\"oldKey\":\""+userInfo.getKey()+"\",\"oldPwd\":\""+userInfo.getPass()+"\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}";
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            try {
+                Writer write = new OutputStreamWriter(new FileOutputStream(readFile), StandardCharsets.UTF_8);
+                write.write(log);
+                write.flush();
+                write.close();
+                System.out.println("写入log数据成功！");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             TripleDES des = new TripleDES();
             String file = des.encryptMode("{\"SaveDataVer\":\"Fgo_20150511_1\",\"userCreateServer\":\"game.fate-go.jp/\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}");
             userInfo.setFile(file);
