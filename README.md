@@ -5,7 +5,7 @@ FGO日服引继码转存档-腾讯云函数
 
 ![image](https://user-images.githubusercontent.com/75831884/168506391-43212a58-d613-48f6-bd94-0f7eb81aa935.png)
 
-2.在函数配置中启用文件系统，远程目录设置为```/continueKey	```，本地目录设置为```/mnt	```，内存尽量设置256M以上
+2.在函数配置中启用文件系统，远程目录设置为```/continueKey```，本地目录设置为```/mnt```，内存尽量设置256M以上
 
 ![image](https://user-images.githubusercontent.com/75831884/168506850-a2a6e7f9-6b88-4cad-976d-ebcd06e2e7a6.png)
 
