@@ -28,7 +28,7 @@ public class EncryptFile {
     public static byte[] iv;
 
     public String getFile(String event) {
-        String result;
+        String result = "未知错误，请重试！";
         JSONObject eventJson = JSONObject.parseObject(event);
         if (eventJson.getString("httpMethod").equals("GET")) {
             if (eventJson.getJSONObject("queryString").getString("key") != null && eventJson.getJSONObject("queryString").getString("pwd") != null && eventJson.getJSONObject("queryString").getString("key").length() == 10 && eventJson.getJSONObject("queryString").getString("pwd").length() >= 4 &&
@@ -46,30 +46,34 @@ public class EncryptFile {
                             appVer = matcher.group(1);
                             top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
                             res = JSONObject.parseObject(top);
+                            dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                            dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                            String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                            Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                            assetbundleFolder = (String) map.get("folderName");
+                            CRC32 crc32 = new CRC32();
+                            crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                            dataServerFolderCrc = String.valueOf(crc32.getValue());
+                            animalName = (String) map.get("animalName");
+                            byte[] a = EncryptFile.animalName.getBytes();
+                            key = new byte[32];
+                            for (int i = 0; i < 32; i++) {
+                                key[i] = (byte) (a[i] ^ 4);
+                            }
+                            iv = new byte[a.length - 32];
+                            for (int i = 0; i < a.length - 32; i++) {
+                                iv[i] = (byte) (a[i + 32] ^ 8);
+                            }
+                            userInfo.setKey(eventJson.getJSONObject("queryString").getString("key"));
+                            userInfo.setPass(eventJson.getJSONObject("queryString").getString("pwd"));
+                            result = new ContinueKeyLogin().regist(userInfo);
                         }
+                    }else{
+                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                     }
+                }else{
+                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                 }
-                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                assetbundleFolder = (String) map.get("folderName");
-                CRC32 crc32 = new CRC32();
-                crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = (String) map.get("animalName");
-                byte[] a = EncryptFile.animalName.getBytes();
-                key = new byte[32];
-                for (int i = 0; i < 32; i++) {
-                    key[i] = (byte) (a[i] ^ 4);
-                }
-                iv = new byte[a.length - 32];
-                for (int i = 0; i < a.length - 32; i++) {
-                    iv[i] = (byte) (a[i + 32] ^ 8);
-                }
-                userInfo.setKey(eventJson.getJSONObject("queryString").getString("key"));
-                userInfo.setPass(eventJson.getJSONObject("queryString").getString("pwd"));
-                result = new ContinueKeyLogin().regist(userInfo);
             } else if (eventJson.getJSONObject("queryString").getString("userId") != null && eventJson.getJSONObject("queryString").getString("authKey") != null && eventJson.getJSONObject("queryString").getString("secretKey") != null && eventJson.getJSONObject("queryString").getString("userId").length() >= 7 &&
                     eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
@@ -88,28 +92,32 @@ public class EncryptFile {
                             appVer = matcher.group(1);
                             top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
                             res = JSONObject.parseObject(top);
+                            dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                            dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                            String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                            Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                            assetbundleFolder = (String) map.get("folderName");
+                            CRC32 crc32 = new CRC32();
+                            crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                            dataServerFolderCrc = String.valueOf(crc32.getValue());
+                            animalName = (String) map.get("animalName");
+                            byte[] a = EncryptFile.animalName.getBytes();
+                            key = new byte[32];
+                            for (int i = 0; i < 32; i++) {
+                                key[i] = (byte) (a[i] ^ 4);
+                            }
+                            iv = new byte[a.length - 32];
+                            for (int i = 0; i < a.length - 32; i++) {
+                                iv[i] = (byte) (a[i + 32] ^ 8);
+                            }
+                            result = new EncryptFileLogin().topLogin(userInfo);
                         }
+                    }else{
+                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                     }
+                }else{
+                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                 }
-                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                assetbundleFolder = (String) map.get("folderName");
-                CRC32 crc32 = new CRC32();
-                crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = (String) map.get("animalName");
-                byte[] a = EncryptFile.animalName.getBytes();
-                key = new byte[32];
-                for (int i = 0; i < 32; i++) {
-                    key[i] = (byte) (a[i] ^ 4);
-                }
-                iv = new byte[a.length - 32];
-                for (int i = 0; i < a.length - 32; i++) {
-                    iv[i] = (byte) (a[i + 32] ^ 8);
-                }
-                result = new EncryptFileLogin().topLogin(userInfo);
             } else if (eventJson.getJSONObject("queryString").getString("encryptFile") != null &&
                     eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null) {
                 try {
@@ -131,28 +139,32 @@ public class EncryptFile {
                                 appVer = matcher.group(1);
                                 top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
                                 res = JSONObject.parseObject(top);
+                                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                                assetbundleFolder = (String) map.get("folderName");
+                                CRC32 crc32 = new CRC32();
+                                crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                                dataServerFolderCrc = String.valueOf(crc32.getValue());
+                                animalName = (String) map.get("animalName");
+                                byte[] a = EncryptFile.animalName.getBytes();
+                                key = new byte[32];
+                                for (int i = 0; i < 32; i++) {
+                                    key[i] = (byte) (a[i] ^ 4);
+                                }
+                                iv = new byte[a.length - 32];
+                                for (int i = 0; i < a.length - 32; i++) {
+                                    iv[i] = (byte) (a[i + 32] ^ 8);
+                                }
+                                result = new EncryptFileLogin().topLogin(userInfo);
                             }
+                        }else{
+                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                         }
+                    }else{
+                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                     }
-                    dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                    dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                    String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                    Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                    assetbundleFolder = (String) map.get("folderName");
-                    CRC32 crc32 = new CRC32();
-                    crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                    dataServerFolderCrc = String.valueOf(crc32.getValue());
-                    animalName = (String) map.get("animalName");
-                    byte[] a = EncryptFile.animalName.getBytes();
-                    key = new byte[32];
-                    for (int i = 0; i < 32; i++) {
-                        key[i] = (byte) (a[i] ^ 4);
-                    }
-                    iv = new byte[a.length - 32];
-                    for (int i = 0; i < a.length - 32; i++) {
-                        iv[i] = (byte) (a[i + 32] ^ 8);
-                    }
-                    result = new EncryptFileLogin().topLogin(userInfo);
                 } catch (Exception e) {
                     result = "存档码解析错误！";
                 }
@@ -197,30 +209,34 @@ public class EncryptFile {
                             appVer = matcher.group(1);
                             top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
                             res = JSONObject.parseObject(top);
+                            dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                            dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                            String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                            Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                            assetbundleFolder = (String) map.get("folderName");
+                            CRC32 crc32 = new CRC32();
+                            crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                            dataServerFolderCrc = String.valueOf(crc32.getValue());
+                            animalName = (String) map.get("animalName");
+                            byte[] a = EncryptFile.animalName.getBytes();
+                            key = new byte[32];
+                            for (int i = 0; i < 32; i++) {
+                                key[i] = (byte) (a[i] ^ 4);
+                            }
+                            iv = new byte[a.length - 32];
+                            for (int i = 0; i < a.length - 32; i++) {
+                                iv[i] = (byte) (a[i + 32] ^ 8);
+                            }
+                            userInfo.setKey(obj.getString("key"));
+                            userInfo.setPass(obj.getString("pwd"));
+                            result = new ContinueKeyLogin().regist(userInfo);
                         }
+                    }else{
+                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                     }
+                }else{
+                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                 }
-                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                assetbundleFolder = (String) map.get("folderName");
-                CRC32 crc32 = new CRC32();
-                crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = (String) map.get("animalName");
-                byte[] a = EncryptFile.animalName.getBytes();
-                key = new byte[32];
-                for (int i = 0; i < 32; i++) {
-                    key[i] = (byte) (a[i] ^ 4);
-                }
-                iv = new byte[a.length - 32];
-                for (int i = 0; i < a.length - 32; i++) {
-                    iv[i] = (byte) (a[i + 32] ^ 8);
-                }
-                userInfo.setKey(obj.getString("key"));
-                userInfo.setPass(obj.getString("pwd"));
-                result = new ContinueKeyLogin().regist(userInfo);
             } else if (obj.getString("userId") != null && obj.getString("authKey") != null && obj.getString("secretKey") != null && obj.getString("userId").length() >= 7 &&
                     obj.getString("key") == null && obj.getString("pwd") == null && obj.getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
@@ -239,28 +255,32 @@ public class EncryptFile {
                             appVer = matcher.group(1);
                             top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
                             res = JSONObject.parseObject(top);
+                            dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                            dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                            String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                            Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                            assetbundleFolder = (String) map.get("folderName");
+                            CRC32 crc32 = new CRC32();
+                            crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                            dataServerFolderCrc = String.valueOf(crc32.getValue());
+                            animalName = (String) map.get("animalName");
+                            byte[] a = EncryptFile.animalName.getBytes();
+                            key = new byte[32];
+                            for (int i = 0; i < 32; i++) {
+                                key[i] = (byte) (a[i] ^ 4);
+                            }
+                            iv = new byte[a.length - 32];
+                            for (int i = 0; i < a.length - 32; i++) {
+                                iv[i] = (byte) (a[i + 32] ^ 8);
+                            }
+                            result = new EncryptFileLogin().topLogin(userInfo);
                         }
+                    }else{
+                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                     }
+                }else{
+                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                 }
-                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                assetbundleFolder = (String) map.get("folderName");
-                CRC32 crc32 = new CRC32();
-                crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = (String) map.get("animalName");
-                byte[] a = EncryptFile.animalName.getBytes();
-                key = new byte[32];
-                for (int i = 0; i < 32; i++) {
-                    key[i] = (byte) (a[i] ^ 4);
-                }
-                iv = new byte[a.length - 32];
-                for (int i = 0; i < a.length - 32; i++) {
-                    iv[i] = (byte) (a[i + 32] ^ 8);
-                }
-                result = new EncryptFileLogin().topLogin(userInfo);
             } else if (obj.getString("encryptFile") != null &&
                     obj.getString("key") == null && obj.getString("pwd") == null && obj.getString("userId") == null && obj.getString("authKey") == null && obj.getString("secretKey") == null) {
                 try {
@@ -282,28 +302,32 @@ public class EncryptFile {
                                 appVer = matcher.group(1);
                                 top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
                                 res = JSONObject.parseObject(top);
+                                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                                assetbundleFolder = (String) map.get("folderName");
+                                CRC32 crc32 = new CRC32();
+                                crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                                dataServerFolderCrc = String.valueOf(crc32.getValue());
+                                animalName = (String) map.get("animalName");
+                                byte[] a = EncryptFile.animalName.getBytes();
+                                key = new byte[32];
+                                for (int i = 0; i < 32; i++) {
+                                    key[i] = (byte) (a[i] ^ 4);
+                                }
+                                iv = new byte[a.length - 32];
+                                for (int i = 0; i < a.length - 32; i++) {
+                                    iv[i] = (byte) (a[i + 32] ^ 8);
+                                }
+                                result = new EncryptFileLogin().topLogin(userInfo);
                             }
+                        }else{
+                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                         }
+                    }else{
+                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
                     }
-                    dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                    dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                    String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                    Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                    assetbundleFolder = (String) map.get("folderName");
-                    CRC32 crc32 = new CRC32();
-                    crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                    dataServerFolderCrc = String.valueOf(crc32.getValue());
-                    animalName = (String) map.get("animalName");
-                    byte[] a = EncryptFile.animalName.getBytes();
-                    key = new byte[32];
-                    for (int i = 0; i < 32; i++) {
-                        key[i] = (byte) (a[i] ^ 4);
-                    }
-                    iv = new byte[a.length - 32];
-                    for (int i = 0; i < a.length - 32; i++) {
-                        iv[i] = (byte) (a[i + 32] ^ 8);
-                    }
-                    result = new EncryptFileLogin().topLogin(userInfo);
                 } catch (Exception e) {
                     result = "存档码解析错误！";
                 }
