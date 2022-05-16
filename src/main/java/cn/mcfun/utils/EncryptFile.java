@@ -9,9 +9,13 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.http.impl.client.BasicCookieStore;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.Base64;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.CRC32;
+
+import static cn.mcfun.utils.AES.decryptWithAesCBC;
 
 public class EncryptFile {
     public static String appVer = "";
@@ -31,16 +35,29 @@ public class EncryptFile {
                     eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null && eventJson.getJSONObject("queryString").getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
                 userInfo.setCookie(new BasicCookieStore());
-                String get = new GetRequest().sendGet(userInfo, "https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
-                JSONObject res = JSONObject.parseObject(get);
-                appVer = res.getString("appVer");
-                dataVer = res.getString("dataVer");
-                dateVer = res.getString("dateVer");
-                assetbundleFolder = res.getString("folderName");
+                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
+                JSONObject res = JSONObject.parseObject(top);
+                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                        Matcher matcher = pattern.matcher(newVersion);
+                        if(matcher.find()){
+                            appVer = matcher.group(1);
+                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
+                            res = JSONObject.parseObject(top);
+                        }
+                    }
+                }
+                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                assetbundleFolder = (String) map.get("folderName");
                 CRC32 crc32 = new CRC32();
                 crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
                 dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = res.getString("animalName");
+                animalName = (String) map.get("animalName");
                 byte[] a = EncryptFile.animalName.getBytes();
                 key = new byte[32];
                 for (int i = 0; i < 32; i++) {
@@ -60,16 +77,29 @@ public class EncryptFile {
                 userInfo.setAuthKey(eventJson.getJSONObject("queryString").getString("authKey"));
                 userInfo.setSecretKey(eventJson.getJSONObject("queryString").getString("secretKey"));
                 userInfo.setCookie(new BasicCookieStore());
-                String get = new GetRequest().sendGet(userInfo, "https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
-                JSONObject res = JSONObject.parseObject(get);
-                appVer = res.getString("appVer");
-                dataVer = res.getString("dataVer");
-                dateVer = res.getString("dateVer");
-                assetbundleFolder = res.getString("folderName");
+                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
+                JSONObject res = JSONObject.parseObject(top);
+                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                        Matcher matcher = pattern.matcher(newVersion);
+                        if(matcher.find()){
+                            appVer = matcher.group(1);
+                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
+                            res = JSONObject.parseObject(top);
+                        }
+                    }
+                }
+                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                assetbundleFolder = (String) map.get("folderName");
                 CRC32 crc32 = new CRC32();
                 crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
                 dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = res.getString("animalName");
+                animalName = (String) map.get("animalName");
                 byte[] a = EncryptFile.animalName.getBytes();
                 key = new byte[32];
                 for (int i = 0; i < 32; i++) {
@@ -90,16 +120,29 @@ public class EncryptFile {
                     userInfo.setAuthKey(encryptFileJson.getString("authKey"));
                     userInfo.setSecretKey(encryptFileJson.getString("secretKey"));
                     userInfo.setCookie(new BasicCookieStore());
-                    String get = new GetRequest().sendGet(userInfo, "https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
-                    JSONObject res = JSONObject.parseObject(get);
-                    appVer = res.getString("appVer");
-                    dataVer = res.getString("dataVer");
-                    dateVer = res.getString("dateVer");
-                    assetbundleFolder = res.getString("folderName");
+                    String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
+                    JSONObject res = JSONObject.parseObject(top);
+                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                            String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                            Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                            Matcher matcher = pattern.matcher(newVersion);
+                            if(matcher.find()){
+                                appVer = matcher.group(1);
+                                top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
+                                res = JSONObject.parseObject(top);
+                            }
+                        }
+                    }
+                    dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                    dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                    String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                    Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                    assetbundleFolder = (String) map.get("folderName");
                     CRC32 crc32 = new CRC32();
                     crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
                     dataServerFolderCrc = String.valueOf(crc32.getValue());
-                    animalName = res.getString("animalName");
+                    animalName = (String) map.get("animalName");
                     byte[] a = EncryptFile.animalName.getBytes();
                     key = new byte[32];
                     for (int i = 0; i < 32; i++) {
@@ -143,16 +186,29 @@ public class EncryptFile {
                     obj.getString("userId") == null && obj.getString("authKey") == null && obj.getString("secretKey") == null && obj.getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
                 userInfo.setCookie(new BasicCookieStore());
-                String get = new GetRequest().sendGet(userInfo, "https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
-                JSONObject res = JSONObject.parseObject(get);
-                appVer = res.getString("appVer");
-                dataVer = res.getString("dataVer");
-                dateVer = res.getString("dateVer");
-                assetbundleFolder = res.getString("folderName");
+                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
+                JSONObject res = JSONObject.parseObject(top);
+                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                        Matcher matcher = pattern.matcher(newVersion);
+                        if(matcher.find()){
+                            appVer = matcher.group(1);
+                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
+                            res = JSONObject.parseObject(top);
+                        }
+                    }
+                }
+                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                assetbundleFolder = (String) map.get("folderName");
                 CRC32 crc32 = new CRC32();
                 crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
                 dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = res.getString("animalName");
+                animalName = (String) map.get("animalName");
                 byte[] a = EncryptFile.animalName.getBytes();
                 key = new byte[32];
                 for (int i = 0; i < 32; i++) {
@@ -172,16 +228,29 @@ public class EncryptFile {
                 userInfo.setAuthKey(obj.getString("authKey"));
                 userInfo.setSecretKey(obj.getString("secretKey"));
                 userInfo.setCookie(new BasicCookieStore());
-                String get = new GetRequest().sendGet(userInfo, "https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
-                JSONObject res = JSONObject.parseObject(get);
-                appVer = res.getString("appVer");
-                dataVer = res.getString("dataVer");
-                dateVer = res.getString("dateVer");
-                assetbundleFolder = res.getString("folderName");
+                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
+                JSONObject res = JSONObject.parseObject(top);
+                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                        Matcher matcher = pattern.matcher(newVersion);
+                        if(matcher.find()){
+                            appVer = matcher.group(1);
+                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
+                            res = JSONObject.parseObject(top);
+                        }
+                    }
+                }
+                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                assetbundleFolder = (String) map.get("folderName");
                 CRC32 crc32 = new CRC32();
                 crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
                 dataServerFolderCrc = String.valueOf(crc32.getValue());
-                animalName = res.getString("animalName");
+                animalName = (String) map.get("animalName");
                 byte[] a = EncryptFile.animalName.getBytes();
                 key = new byte[32];
                 for (int i = 0; i < 32; i++) {
@@ -202,16 +271,29 @@ public class EncryptFile {
                     userInfo.setAuthKey(encryptFileJson.getString("authKey"));
                     userInfo.setSecretKey(encryptFileJson.getString("secretKey"));
                     userInfo.setCookie(new BasicCookieStore());
-                    String get = new GetRequest().sendGet(userInfo, "https://raw.githubusercontent.com/xiaoheimaoo/FGOData/master/mstVer.json");
-                    JSONObject res = JSONObject.parseObject(get);
-                    appVer = res.getString("appVer");
-                    dataVer = res.getString("dataVer");
-                    dateVer = res.getString("dateVer");
-                    assetbundleFolder = res.getString("folderName");
+                    String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
+                    JSONObject res = JSONObject.parseObject(top);
+                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                            String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                            Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                            Matcher matcher = pattern.matcher(newVersion);
+                            if(matcher.find()){
+                                appVer = matcher.group(1);
+                                top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
+                                res = JSONObject.parseObject(top);
+                            }
+                        }
+                    }
+                    dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                    dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                    String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                    Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                    assetbundleFolder = (String) map.get("folderName");
                     CRC32 crc32 = new CRC32();
                     crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
                     dataServerFolderCrc = String.valueOf(crc32.getValue());
-                    animalName = res.getString("animalName");
+                    animalName = (String) map.get("animalName");
                     byte[] a = EncryptFile.animalName.getBytes();
                     key = new byte[32];
                     for (int i = 0; i < 32; i++) {
@@ -246,5 +328,17 @@ public class EncryptFile {
         System.out.println(result);
         System.out.println("------------------------------------------------------");
         return json.toJSONString();
+    }
+    public static Map<String,Object> mouseInfoMsgPack(byte[] data){
+        byte[] InfoTop = new byte[32];
+        byte[] array = new byte[data.length - 32];
+        byte[] infoData = "W0Juh4cFJSYPkebJB9WpswNF51oa6Gm7".getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(data, 0, InfoTop, 0, 32);
+        System.arraycopy(data, 32, array, 0, data.length - 32);
+        return mouseHomeMsgPack(array, infoData, InfoTop);
+    }
+    public static Map<String,Object> mouseHomeMsgPack(byte[] data, byte[] home, byte[] info){
+        Map<String,Object> a = decryptWithAesCBC(home,info,data);
+        return a;
     }
 }
