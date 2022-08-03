@@ -34,6 +34,9 @@ public class EncryptFile {
             if (eventJson.getJSONObject("queryString").getString("key") != null && eventJson.getJSONObject("queryString").getString("pwd") != null && eventJson.getJSONObject("queryString").getString("key").length() == 10 && eventJson.getJSONObject("queryString").getString("pwd").length() >= 4 &&
                     eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null && eventJson.getJSONObject("queryString").getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
+                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                }
                 userInfo.setCookie(new BasicCookieStore());
                 String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                 JSONObject res = JSONObject.parseObject(top);
@@ -77,6 +80,9 @@ public class EncryptFile {
             } else if (eventJson.getJSONObject("queryString").getString("userId") != null && eventJson.getJSONObject("queryString").getString("authKey") != null && eventJson.getJSONObject("queryString").getString("secretKey") != null && eventJson.getJSONObject("queryString").getString("userId").length() >= 7 &&
                     eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
+                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                }
                 userInfo.setUserId(eventJson.getJSONObject("queryString").getString("userId"));
                 userInfo.setAuthKey(eventJson.getJSONObject("queryString").getString("authKey"));
                 userInfo.setSecretKey(eventJson.getJSONObject("queryString").getString("secretKey"));
@@ -124,6 +130,9 @@ public class EncryptFile {
                     String encryptFile = new TripleDES().decryptMode(eventJson.getJSONObject("queryString").getString("encryptFile"));
                     JSONObject encryptFileJson = JSONObject.parseObject(encryptFile);
                     UserInfo userInfo = new UserInfo();
+                    if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                        userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                    }
                     userInfo.setUserId(encryptFileJson.getString("userId"));
                     userInfo.setAuthKey(encryptFileJson.getString("authKey"));
                     userInfo.setSecretKey(encryptFileJson.getString("secretKey"));
@@ -197,6 +206,9 @@ public class EncryptFile {
             if (obj.getString("key") != null && obj.getString("pwd") != null && obj.getString("key").length() == 10 && obj.getString("pwd").length() >= 4 &&
                     obj.getString("userId") == null && obj.getString("authKey") == null && obj.getString("secretKey") == null && obj.getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
+                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                }
                 userInfo.setCookie(new BasicCookieStore());
                 String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                 JSONObject res = JSONObject.parseObject(top);
@@ -240,6 +252,9 @@ public class EncryptFile {
             } else if (obj.getString("userId") != null && obj.getString("authKey") != null && obj.getString("secretKey") != null && obj.getString("userId").length() >= 7 &&
                     obj.getString("key") == null && obj.getString("pwd") == null && obj.getString("encryptFile") == null) {
                 UserInfo userInfo = new UserInfo();
+                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                }
                 userInfo.setUserId(obj.getString("userId"));
                 userInfo.setAuthKey(obj.getString("authKey"));
                 userInfo.setSecretKey(obj.getString("secretKey"));
@@ -287,6 +302,9 @@ public class EncryptFile {
                     String encryptFile = new TripleDES().decryptMode(obj.getString("encryptFile"));
                     JSONObject encryptFileJson = JSONObject.parseObject(encryptFile);
                     UserInfo userInfo = new UserInfo();
+                    if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                        userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                    }
                     userInfo.setUserId(encryptFileJson.getString("userId"));
                     userInfo.setAuthKey(encryptFileJson.getString("authKey"));
                     userInfo.setSecretKey(encryptFileJson.getString("secretKey"));

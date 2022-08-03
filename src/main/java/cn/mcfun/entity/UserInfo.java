@@ -13,9 +13,18 @@ public class UserInfo {
     String continuePass;
     String key;
     String pass;
+    String newPass;
     String ip;
 
     public UserInfo() {
+    }
+
+    public String getNewPass() {
+        return newPass;
+    }
+
+    public void setNewPass(String newPass) {
+        this.newPass = newPass;
     }
 
     public String getIp() {
