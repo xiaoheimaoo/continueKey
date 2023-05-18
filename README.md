@@ -47,9 +47,9 @@ FGO日服引继码转存档-腾讯云函数
 
 3.userId，authKey，secretKey转引继码
 
-示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?userId=61379147&authKey=gV+NTSiL7TQdFeaS:at32AwAAAAA=&secretKey=d0KnrAw/iltk+mex:at32AwAAAAA=`
+示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?userId=61379147&authKey=gV%2BNTSiL7TQdFeaS%3Aat32AwAAAAA%3D&secretKey=d0KnrAw%2Filtk%2Bmex%3Aat32AwAAAAA%3D`
 
-`userId`用户id，`authKey`authKey，`secretKey`secretKey
+`userId`用户id，`authKey`authKey，`secretKey`secretKey（在浏览器中输入，要先进行url编码）
 
 ```json
 {
