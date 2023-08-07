@@ -14,9 +14,19 @@ public class UserInfo {
     String key;
     String pass;
     String newPass;
+    String token;
     String ip;
+    String port;
 
     public UserInfo() {
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getNewPass() {
@@ -33,6 +43,14 @@ public class UserInfo {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
     }
 
     public BasicCookieStore getCookie() {

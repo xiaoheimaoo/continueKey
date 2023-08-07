@@ -25,21 +25,15 @@ public class PostRequest {
     public String sendPost(UserInfo userInfo, String url, List<BasicNameValuePair> params) {
         CloseableHttpClient httpClient;
         HttpHost proxy;
-        if(userInfo.getIp() != null && !userInfo.getIp().equals("")){
-            proxy = new HttpHost(userInfo.getIp().split(":")[0], Integer.parseInt(userInfo.getIp().split(":")[1]));
-            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-            CredentialsProvider provider = new BasicCredentialsProvider();
-            provider.setCredentials(new AuthScope(proxy), new UsernamePasswordCredentials("fgo", "fgo"));
-            httpClient = HttpClients.custom()
-                    .setDefaultCookieStore(userInfo.getCookie())
-                    .setDefaultCredentialsProvider(provider)
-                    .setRoutePlanner(routePlanner)
-                    .build();
-        }else{
-            httpClient = HttpClients.custom()
-                    .setDefaultCookieStore(userInfo.getCookie())
-                    .build();
-        }
+        proxy = new HttpHost("xxx.xxx.xxx.xxx",8888);
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        provider.setCredentials(new AuthScope(proxy), new UsernamePasswordCredentials(userInfo.getPort(), "test"));
+        httpClient = HttpClients.custom()
+                .setDefaultCookieStore(userInfo.getCookie())
+                .setDefaultCredentialsProvider(provider)
+                .setRoutePlanner(routePlanner)
+                .build();
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("Connection", "keep-alive");
         httpPost.addHeader("Accept", "*/*");

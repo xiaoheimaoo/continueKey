@@ -11,6 +11,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
@@ -37,7 +38,13 @@ public class EncryptFile {
                 if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
                     userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
                 }
+                if(eventJson.getJSONObject("queryString").getString("token") != null){
+                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                }
                 userInfo.setCookie(new BasicCookieStore());
+                Random rand = new Random(); //创建一个随机产生数类Scanner
+                int port = rand.nextInt(2099 - 100 + 1) + 100;
+                userInfo.setPort("ip"+port);
                 String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                 JSONObject res = JSONObject.parseObject(top);
                 if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
@@ -69,7 +76,11 @@ public class EncryptFile {
                             }
                             userInfo.setKey(eventJson.getJSONObject("queryString").getString("key"));
                             userInfo.setPass(eventJson.getJSONObject("queryString").getString("pwd"));
-                            result = new ContinueKeyLogin().regist(userInfo);
+                            if(userInfo.getToken() == null){
+                                result = "token参数不能为空，用户未登录！";
+                            }else {
+                                result = new ContinueKeyLogin().regist(userInfo);
+                            }
                         }
                     }else{
                         result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
@@ -83,10 +94,16 @@ public class EncryptFile {
                 if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
                     userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
                 }
+                if(eventJson.getJSONObject("queryString").getString("token") != null){
+                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                }
                 userInfo.setUserId(eventJson.getJSONObject("queryString").getString("userId"));
                 userInfo.setAuthKey(eventJson.getJSONObject("queryString").getString("authKey"));
                 userInfo.setSecretKey(eventJson.getJSONObject("queryString").getString("secretKey"));
                 userInfo.setCookie(new BasicCookieStore());
+                Random rand = new Random(); //创建一个随机产生数类Scanner
+                int port = rand.nextInt(2099 - 100 + 1) + 100;
+                userInfo.setPort("ip"+port);
                 String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                 JSONObject res = JSONObject.parseObject(top);
                 if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
@@ -133,10 +150,16 @@ public class EncryptFile {
                     if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
                         userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
                     }
+                    if(eventJson.getJSONObject("queryString").getString("token") != null){
+                        userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                    }
                     userInfo.setUserId(encryptFileJson.getString("userId"));
                     userInfo.setAuthKey(encryptFileJson.getString("authKey"));
                     userInfo.setSecretKey(encryptFileJson.getString("secretKey"));
                     userInfo.setCookie(new BasicCookieStore());
+                    Random rand = new Random(); //创建一个随机产生数类Scanner
+                    int port = rand.nextInt(2099 - 100 + 1) + 100;
+                    userInfo.setPort("ip"+port);
                     String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                     JSONObject res = JSONObject.parseObject(top);
                     if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
@@ -209,7 +232,13 @@ public class EncryptFile {
                 if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
                     userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
                 }
+                if(eventJson.getJSONObject("queryString").getString("token") != null){
+                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                }
                 userInfo.setCookie(new BasicCookieStore());
+                Random rand = new Random(); //创建一个随机产生数类Scanner
+                int port = rand.nextInt(2099 - 100 + 1) + 100;
+                userInfo.setPort("ip"+port);
                 String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                 JSONObject res = JSONObject.parseObject(top);
                 if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
@@ -241,7 +270,11 @@ public class EncryptFile {
                             }
                             userInfo.setKey(obj.getString("key"));
                             userInfo.setPass(obj.getString("pwd"));
-                            result = new ContinueKeyLogin().regist(userInfo);
+                            if(userInfo.getToken() == null){
+                                result = "token参数不能为空，用户未登录！";
+                            }else {
+                                result = new ContinueKeyLogin().regist(userInfo);
+                            }
                         }
                     }else{
                         result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
@@ -255,10 +288,16 @@ public class EncryptFile {
                 if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
                     userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
                 }
+                if(eventJson.getJSONObject("queryString").getString("token") != null){
+                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                }
                 userInfo.setUserId(obj.getString("userId"));
                 userInfo.setAuthKey(obj.getString("authKey"));
                 userInfo.setSecretKey(obj.getString("secretKey"));
                 userInfo.setCookie(new BasicCookieStore());
+                Random rand = new Random(); //创建一个随机产生数类Scanner
+                int port = rand.nextInt(2099 - 100 + 1) + 100;
+                userInfo.setPort("ip"+port);
                 String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                 JSONObject res = JSONObject.parseObject(top);
                 if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
@@ -305,10 +344,16 @@ public class EncryptFile {
                     if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
                         userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
                     }
+                    if(eventJson.getJSONObject("queryString").getString("token") != null){
+                        userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                    }
                     userInfo.setUserId(encryptFileJson.getString("userId"));
                     userInfo.setAuthKey(encryptFileJson.getString("authKey"));
                     userInfo.setSecretKey(encryptFileJson.getString("secretKey"));
                     userInfo.setCookie(new BasicCookieStore());
+                    Random rand = new Random(); //创建一个随机产生数类Scanner
+                    int port = rand.nextInt(2099 - 100 + 1) + 100;
+                    userInfo.setPort("ip"+port);
                     String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
                     JSONObject res = JSONObject.parseObject(top);
                     if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {

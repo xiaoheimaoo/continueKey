@@ -37,7 +37,7 @@ public class ContinueKeyLogin {
             userInfo.setUserId(userId);
             return decide(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -97,7 +97,7 @@ public class ContinueKeyLogin {
             System.out.println("secretKey="+secretKey);
             System.out.println("------------------------------------------------------");
             String log = "{\"data\":\"转换过程出现异常！请复制本条结果联系群主找回账号！\",\"oldKey\":\""+userInfo.getKey()+"\",\"oldPwd\":\""+userInfo.getPass()+"\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}";
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             try {
                 Writer write = new OutputStreamWriter(new FileOutputStream(readFile), StandardCharsets.UTF_8);
                 write.write(log);
@@ -112,7 +112,7 @@ public class ContinueKeyLogin {
             userInfo.setFile(file);
             return topLogin(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -162,7 +162,7 @@ public class ContinueKeyLogin {
             //登录成功（及时保存存档！）
             return topHome(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -207,7 +207,7 @@ public class ContinueKeyLogin {
         if (jsonObject.getJSONArray("response").getJSONObject(0).getString("resCode").equals("00")) {
             return prepare(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -265,7 +265,7 @@ public class ContinueKeyLogin {
             System.out.println("------------------------------------------------------");
             String json1 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"encryptFile\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"isNew\": false}";
             String json2 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"encryptFile\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"isNew\": true}";
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
             try {
                 Writer write = new OutputStreamWriter(new FileOutputStream(readFile), StandardCharsets.UTF_8);
                 write.write(json1);
@@ -277,7 +277,7 @@ public class ContinueKeyLogin {
             }
             return json2;
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()));
+            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
