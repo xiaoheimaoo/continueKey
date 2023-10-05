@@ -22,11 +22,8 @@ public class GetRequest {
         HttpHost proxy;
         proxy = new HttpHost("xxx.xxx.xxx.xxx",8888);
         DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        provider.setCredentials(new AuthScope(proxy), new UsernamePasswordCredentials(userInfo.getPort(), "test"));
         httpClient = HttpClients.custom()
                 .setDefaultCookieStore(userInfo.getCookie())
-                .setDefaultCredentialsProvider(provider)
                 .setRoutePlanner(routePlanner)
                 .build();
         HttpGet httpGet = new HttpGet(url);
