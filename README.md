@@ -16,9 +16,14 @@ FGO日服引继码转存档-腾讯云函数
 ## 使用方法(均为GET请求)
 1.引继码转存档
 
-示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?key=8rHQnTYmfB&pwd=1234`
+示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?key=8rHQnTYmfB&pwd=1234&token=1`
 
-`key`引继码，`pwd`密码
+| 参数名 | 必要性        | 内容 |
+| ------ | ----------- | ------ |
+| key    | 必要 | 引继码   |
+| pwd  | 必要    | 密码   |
+| newpwd    | 非必要  | 新密码，默认随机   |
+| token    | 必要  | 用来区分用户   |
 
 ```json
 {
@@ -27,7 +32,9 @@ FGO日服引继码转存档-腾讯云函数
 	"saveData": "ZSv/WkOGi...eOqhov6uXQ==",  #存档
 	"userId": "61379147", #用户id
 	"authKey": "gV+NTSiL7TQdFeaS:at32AwAAAAA=",
-	"secretKey": "d0KnrAw/iltk+mex:at32AwAAAAA="
+	"secretKey": "d0KnrAw/iltk+mex:at32AwAAAAA=",
+	"userCreateServer": "game.fate-go.jp", #服务器jp/us
+	"isNew": true #是否是新生成的记录
 }
 ```
 
@@ -35,13 +42,18 @@ FGO日服引继码转存档-腾讯云函数
 
 示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?saveData=ZSv%2FWkOGi...eOqhov6uXQ%3D%3D`
 
-`saveData`存档（在浏览器中输入，要先进行url编码）
+| 参数名 | 必要性        | 内容 |
+| ------ | ----------- | ------ |
+| saveData    | 必要 | 存档（在浏览器中输入，要先进行url编码）   |
+| newpwd    | 非必要  | 新密码，默认随机   |
+| token    | 必要  | 用来区分用户   |
 
 ```json
 {
 	"continueKey": "FC2uymnw6T",  #新引继码
 	"continuePass": "9131", #新密码
-	"userId": "61379147"  #用户id
+	"userId": "61379147",  #用户id
+	"userCreateServer": "game.fate-go.jp" #服务器jp/us
 }
 ```
 
@@ -49,12 +61,19 @@ FGO日服引继码转存档-腾讯云函数
 
 示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?userId=61379147&authKey=gV%2BNTSiL7TQdFeaS%3Aat32AwAAAAA%3D&secretKey=d0KnrAw%2Filtk%2Bmex%3Aat32AwAAAAA%3D`
 
-`userId`用户id，`authKey`authKey，`secretKey`secretKey（在浏览器中输入，要先进行url编码）
+| 参数名 | 必要性        | 内容 |
+| ------ | ----------- | ------ |
+| userId    | 必要 | 用户id   |
+| authKey    | 必要  | （在浏览器中输入，要先进行url编码）   |
+| secretKey    | 必要  | （在浏览器中输入，要先进行url编码）   |
+| newpwd    | 非必要  | 新密码，默认随机   |
+| token    | 必要  | 用来区分用户   |
 
 ```json
 {
 	"continueKey": "FC2uymnw6T",  #新引继码
 	"continuePass": "9131", #新密码
-	"userId": "61379147"  #用户id
+	"userId": "61379147",  #用户id
+	"userCreateServer": "game.fate-go.jp" #服务器jp/us
 }
 ```
