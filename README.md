@@ -24,7 +24,7 @@ FGO日服引继码转存档-腾讯云函数
 {
 	"continueKey": "JaGbzYXqC2",  #新引继码
 	"continuePass": "3794", #新密码
-	"encryptFile": "ZSv/WkOGi...eOqhov6uXQ==",  #存档
+	"saveData": "ZSv/WkOGi...eOqhov6uXQ==",  #存档
 	"userId": "61379147", #用户id
 	"authKey": "gV+NTSiL7TQdFeaS:at32AwAAAAA=",
 	"secretKey": "d0KnrAw/iltk+mex:at32AwAAAAA="
@@ -33,9 +33,9 @@ FGO日服引继码转存档-腾讯云函数
 
 2.存档转引继码
 
-示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?encryptFile=ZSv%2FWkOGi...eOqhov6uXQ%3D%3D`
+示例：`https://service-pv3w1woy-1303287969.jp.apigw.tencentcs.com/release/continueKey?saveData=ZSv%2FWkOGi...eOqhov6uXQ%3D%3D`
 
-`encryptFile`存档（在浏览器中输入，要先进行url编码）
+`saveData`存档（在浏览器中输入，要先进行url编码）
 
 ```json
 {

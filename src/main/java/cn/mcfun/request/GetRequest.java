@@ -38,4 +38,25 @@ public class GetRequest {
 
         return result;
     }
+    public String sendGet2(UserInfo userInfo, String url) {
+        CloseableHttpClient httpClient;
+        HttpHost proxy;
+        proxy = new HttpHost("xxx.xxx.xxx.xxx",8888);
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+        httpClient = HttpClients.custom()
+                .setDefaultCookieStore(userInfo.getCookie())
+                //.setRoutePlanner(routePlanner)
+                .build();
+        HttpGet httpGet = new HttpGet(url);
+        String result = null;
+
+        try {
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+            result = EntityUtils.toString(response.getEntity(), Charset.forName("utf-8"));
+        } catch (IOException var7) {
+            var7.printStackTrace();
+        }
+
+        return result;
+    }
 }

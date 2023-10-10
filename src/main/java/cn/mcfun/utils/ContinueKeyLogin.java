@@ -26,7 +26,7 @@ public class ContinueKeyLogin {
         params.add(new BasicNameValuePair("verCode", "e92c481b51ff8203344cf768b2f5bc84b14409bc2ad7084292c9370ea97621de"));
         String sign = (new AuthCode()).getSign(userInfo, params);
         params.add(new BasicNameValuePair("authCode", sign));
-        String result = new PostRequest().sendPost(userInfo, "https://game.fate-go.jp/account/regist", params);
+        String result = new PostRequest().sendPost(userInfo, "https://"+EncryptFile.userCreateServer+"/account/regist", params);
         JSONObject jsonObject = JSONObject.parseObject(result);
         if (jsonObject.getJSONArray("response").getJSONObject(0).getString("resCode").equals("00")) {
             String authKey = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("authKey");
@@ -37,7 +37,7 @@ public class ContinueKeyLogin {
             userInfo.setUserId(userId);
             return decide(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
+            File readFile = new File(EncryptFile.filePath+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -80,7 +80,7 @@ public class ContinueKeyLogin {
         params.add(new BasicNameValuePair("verCode", "e92c481b51ff8203344cf768b2f5bc84b14409bc2ad7084292c9370ea97621de"));
         String sign = (new AuthCode()).getSign(userInfo, params);
         params.add(new BasicNameValuePair("authCode", sign));
-        String result = new PostRequest().sendPost(userInfo, "https://game.fate-go.jp/continue/decide?_userId="+userInfo.getUserId(), params);
+        String result = new PostRequest().sendPost(userInfo, "https://"+EncryptFile.userCreateServer+"/continue/decide?_userId="+userInfo.getUserId(), params);
         JSONObject jsonObject = JSONObject.parseObject(result);
         if (jsonObject.getJSONArray("response").getJSONObject(0).getString("resCode").equals("00")) {
             String authKey = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("authKey");
@@ -95,9 +95,10 @@ public class ContinueKeyLogin {
             System.out.println("userId="+userId);
             System.out.println("authKey="+authKey);
             System.out.println("secretKey="+secretKey);
+            System.out.println("userCreateServer="+EncryptFile.userCreateServer);
             System.out.println("------------------------------------------------------");
-            String log = "{\"data\":\"转换过程出现异常！请复制本条结果联系群主找回账号！\",\"oldKey\":\""+userInfo.getKey()+"\",\"oldPwd\":\""+userInfo.getPass()+"\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}";
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
+            String log = "{\"data\":\"转换过程出现异常！请复制本条结果联系群主找回账号！\",\"oldKey\":\""+userInfo.getKey()+"\",\"oldPwd\":\""+userInfo.getPass()+"\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\",\"userCreateServer\":\""+EncryptFile.userCreateServer+"\"}";
+            File readFile = new File(EncryptFile.filePath+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             try {
                 Writer write = new OutputStreamWriter(new FileOutputStream(readFile), StandardCharsets.UTF_8);
                 write.write(log);
@@ -108,11 +109,11 @@ public class ContinueKeyLogin {
                 e.printStackTrace();
             }
             TripleDES des = new TripleDES();
-            String file = des.encryptMode("{\"SaveDataVer\":\"Fgo_20150511_1\",\"userCreateServer\":\"game.fate-go.jp/\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}");
+            String file = des.encryptMode("{\"SaveDataVer\":\"Fgo_20150511_1\",\"userCreateServer\":\""+EncryptFile.userCreateServer+"/\",\"userId\":\""+userId+"\",\"authKey\":\""+authKey+"\",\"secretKey\":\""+secretKey+"\"}");
             userInfo.setFile(file);
             return topLogin(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
+            File readFile = new File(EncryptFile.filePath+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -156,13 +157,13 @@ public class ContinueKeyLogin {
         params.add(new BasicNameValuePair("isTerminalLogin", "1"));
         String sign = (new AuthCode()).getSign(userInfo, params);
         params.add(new BasicNameValuePair("authCode", sign));
-        String result = new PostRequest().sendPost(userInfo, "https://game.fate-go.jp/login/top?_userId=" + userInfo.getUserId(), params);
+        String result = new PostRequest().sendPost(userInfo, "https://"+EncryptFile.userCreateServer+"/login/top?_userId=" + userInfo.getUserId(), params);
         JSONObject jsonObject = JSONObject.parseObject(result);
         if (jsonObject.getJSONArray("response").getJSONObject(0).getString("resCode").equals("00")) {
             //登录成功（及时保存存档！）
             return topHome(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
+            File readFile = new File(EncryptFile.filePath+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -202,12 +203,12 @@ public class ContinueKeyLogin {
         params.add(new BasicNameValuePair("dataVer", EncryptFile.dataVer));
         String sign = (new AuthCode()).getSign(userInfo, params);
         params.add(new BasicNameValuePair("authCode", sign));
-        String result = new PostRequest().sendPost(userInfo, "https://game.fate-go.jp/home/top?_userId=" + userInfo.getUserId(), params);
+        String result = new PostRequest().sendPost(userInfo, "https://"+EncryptFile.userCreateServer+"/home/top?_userId=" + userInfo.getUserId(), params);
         JSONObject jsonObject = JSONObject.parseObject(result);
         if (jsonObject.getJSONArray("response").getJSONObject(0).getString("resCode").equals("00")) {
             return prepare(userInfo);
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
+            File readFile = new File(EncryptFile.filePath+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {
@@ -253,7 +254,7 @@ public class ContinueKeyLogin {
         params.add(new BasicNameValuePair("verCode", "e92c481b51ff8203344cf768b2f5bc84b14409bc2ad7084292c9370ea97621de"));
         String sign = (new AuthCode()).getSign(userInfo, params);
         params.add(new BasicNameValuePair("authCode", sign));
-        String result = new PostRequest().sendPost(userInfo, "https://game.fate-go.jp/continue/prepare?_userId="+userInfo.getUserId(), params);
+        String result = new PostRequest().sendPost(userInfo, "https://"+EncryptFile.userCreateServer+"/continue/prepare?_userId="+userInfo.getUserId(), params);
         JSONObject jsonObject = JSONObject.parseObject(result);
         if (jsonObject.getJSONArray("response").getJSONObject(0).getString("resCode").equals("00")) {
             String continueKey = jsonObject.getJSONObject("cache").getJSONObject("updated").getJSONArray("userContinue").getJSONObject(0).getString("continueKey");
@@ -262,10 +263,11 @@ public class ContinueKeyLogin {
             System.out.println("--------------------记录数据2--------------------");
             System.out.println("continueKey="+continueKey);
             System.out.println("continuePass="+continuePass);
+            System.out.println("userCreateServer="+EncryptFile.userCreateServer);
             System.out.println("------------------------------------------------------");
-            String json1 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"encryptFile\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"isNew\": false}";
-            String json2 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"encryptFile\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"isNew\": true}";
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
+            String json1 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"saveData\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"userCreateServer\": \""+EncryptFile.userCreateServer+"\", \"isNew\": false}";
+            String json2 = "{\"continueKey\": \""+userInfo.getContinueKey()+"\", \"continuePass\": \""+userInfo.getContinuePass()+"\", \"saveData\": \""+userInfo.getFile()+"\", \"userId\": \""+userInfo.getUserId()+"\", \"authKey\": \""+userInfo.getAuthKey()+"\", \"secretKey\": \""+userInfo.getSecretKey()+"\", \"userCreateServer\": \""+EncryptFile.userCreateServer+"\", \"isNew\": true}";
+            File readFile = new File(EncryptFile.filePath+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             try {
                 Writer write = new OutputStreamWriter(new FileOutputStream(readFile), StandardCharsets.UTF_8);
                 write.write(json1);
@@ -277,7 +279,7 @@ public class ContinueKeyLogin {
             }
             return json2;
         } else {
-            File readFile = new File("/mnt/"+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+userInfo.getPass()+":"+userInfo.getToken()));
+            File readFile = new File(EncryptFile.filePath+new TripleDES().stringToMD5(userInfo.getKey()+userInfo.getPass()+":"+userInfo.getToken()));
             String rs = jsonObject.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
             if(readFile.exists()) {
                 try {

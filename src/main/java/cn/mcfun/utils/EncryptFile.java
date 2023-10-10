@@ -19,6 +19,9 @@ import java.util.zip.CRC32;
 import static cn.mcfun.utils.AES.decryptWithAesCBC;
 
 public class EncryptFile {
+    public static String userCreateServer = "game.fate-go.jp";
+    private static String mouseInfoMsgPackKey = "W0Juh4cFJSYPkebJB9WpswNF51oa6Gm7";
+    public static String filePath = "/mnt/jp/";
     public static String appVer = "";
     public static String assetbundleFolder = "";
     public static String dataServerFolderCrc = "";
@@ -32,30 +35,208 @@ public class EncryptFile {
         String result = "未知错误，请重试！";
         JSONObject eventJson = JSONObject.parseObject(event);
         if (eventJson.getString("httpMethod").equals("GET")) {
-            if (eventJson.getJSONObject("queryString").getString("key") != null && eventJson.getJSONObject("queryString").getString("pwd") != null && eventJson.getJSONObject("queryString").getString("key").length() == 10 && eventJson.getJSONObject("queryString").getString("pwd").length() >= 4 &&
-                    eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null && eventJson.getJSONObject("queryString").getString("encryptFile") == null) {
-                UserInfo userInfo = new UserInfo();
-                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
-                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
-                }
-                if(eventJson.getJSONObject("queryString").getString("token") != null){
-                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
-                }
-                userInfo.setCookie(new BasicCookieStore());
-                Random rand = new Random(); //创建一个随机产生数类Scanner
-                int port = rand.nextInt(2099 - 100 + 1) + 100;
-                userInfo.setPort("ip"+port);
-                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
-                JSONObject res = JSONObject.parseObject(top);
-                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
-                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
-                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
-                        Matcher matcher = pattern.matcher(newVersion);
-                        if(matcher.find()){
-                            appVer = matcher.group(1);
-                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
-                            res = JSONObject.parseObject(top);
+            if(eventJson.getJSONObject("queryString").getString("userCreateServer") != null){
+                if(eventJson.getJSONObject("queryString").getString("userCreateServer").toLowerCase().equals("jp")){
+                    userCreateServer = "game.fate-go.jp";
+                    mouseInfoMsgPackKey = "W0Juh4cFJSYPkebJB9WpswNF51oa6Gm7";
+                    filePath = "/mnt/jp/";
+                    if (eventJson.getJSONObject("queryString").getString("key") != null && eventJson.getJSONObject("queryString").getString("pwd") != null && eventJson.getJSONObject("queryString").getString("key").length() == 10 && eventJson.getJSONObject("queryString").getString("pwd").length() >= 4 &&
+                            eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null && eventJson.getJSONObject("queryString").getString("saveData") == null) {
+                        UserInfo userInfo = new UserInfo();
+                        if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                            userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                        }
+                        if(eventJson.getJSONObject("queryString").getString("token") != null){
+                            userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                        }
+                        userInfo.setCookie(new BasicCookieStore());
+                        Random rand = new Random(); //创建一个随机产生数类Scanner
+                        int port = rand.nextInt(2099 - 100 + 1) + 100;
+                        userInfo.setPort("ip"+port);
+                        String top = new GetRequest().sendGet(userInfo,"https://"+userCreateServer+"/gamedata/top?appVer=2.44.0");
+                        JSONObject res = JSONObject.parseObject(top);
+                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                            if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                                String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                                Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                                Matcher matcher = pattern.matcher(newVersion);
+                                if(matcher.find()){
+                                    appVer = matcher.group(1);
+                                    top = new GetRequest().sendGet(userInfo,"https://"+userCreateServer+"/gamedata/top?appVer="+matcher.group(1));
+                                    res = JSONObject.parseObject(top);
+                                    dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                                    dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                                    String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                                    Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                                    assetbundleFolder = (String) map.get("folderName");
+                                    CRC32 crc32 = new CRC32();
+                                    crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                                    dataServerFolderCrc = String.valueOf(crc32.getValue());
+                                    animalName = (String) map.get("animalName");
+                                    byte[] a = EncryptFile.animalName.getBytes();
+                                    key = new byte[32];
+                                    for (int i = 0; i < 32; i++) {
+                                        key[i] = (byte) (a[i] ^ 4);
+                                    }
+                                    iv = new byte[a.length - 32];
+                                    for (int i = 0; i < a.length - 32; i++) {
+                                        iv[i] = (byte) (a[i + 32] ^ 8);
+                                    }
+                                    userInfo.setKey(eventJson.getJSONObject("queryString").getString("key"));
+                                    userInfo.setPass(eventJson.getJSONObject("queryString").getString("pwd"));
+                                    if(userInfo.getToken() == null){
+                                        result = "token参数不能为空，用户未登录！";
+                                    }else {
+                                        result = new ContinueKeyLogin().regist(userInfo);
+                                    }
+                                }
+                            }else{
+                                result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                            }
+                        }else{
+                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        }
+                    } else if (eventJson.getJSONObject("queryString").getString("userId") != null && eventJson.getJSONObject("queryString").getString("authKey") != null && eventJson.getJSONObject("queryString").getString("secretKey") != null && eventJson.getJSONObject("queryString").getString("userId").length() >= 7 &&
+                            eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("saveData") == null) {
+                        UserInfo userInfo = new UserInfo();
+                        if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                            userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                        }
+                        if(eventJson.getJSONObject("queryString").getString("token") != null){
+                            userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                        }
+                        userInfo.setUserId(eventJson.getJSONObject("queryString").getString("userId"));
+                        userInfo.setAuthKey(eventJson.getJSONObject("queryString").getString("authKey"));
+                        userInfo.setSecretKey(eventJson.getJSONObject("queryString").getString("secretKey"));
+                        userInfo.setCookie(new BasicCookieStore());
+                        Random rand = new Random(); //创建一个随机产生数类Scanner
+                        int port = rand.nextInt(2099 - 100 + 1) + 100;
+                        userInfo.setPort("ip"+port);
+                        String top = new GetRequest().sendGet(userInfo,"https://"+userCreateServer+"/gamedata/top?appVer=2.44.0");
+                        JSONObject res = JSONObject.parseObject(top);
+                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                            if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                                String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                                Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                                Matcher matcher = pattern.matcher(newVersion);
+                                if(matcher.find()){
+                                    appVer = matcher.group(1);
+                                    top = new GetRequest().sendGet(userInfo,"https://"+userCreateServer+"/gamedata/top?appVer="+matcher.group(1));
+                                    res = JSONObject.parseObject(top);
+                                    dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                                    dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                                    String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                                    Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                                    assetbundleFolder = (String) map.get("folderName");
+                                    CRC32 crc32 = new CRC32();
+                                    crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                                    dataServerFolderCrc = String.valueOf(crc32.getValue());
+                                    animalName = (String) map.get("animalName");
+                                    byte[] a = EncryptFile.animalName.getBytes();
+                                    key = new byte[32];
+                                    for (int i = 0; i < 32; i++) {
+                                        key[i] = (byte) (a[i] ^ 4);
+                                    }
+                                    iv = new byte[a.length - 32];
+                                    for (int i = 0; i < a.length - 32; i++) {
+                                        iv[i] = (byte) (a[i + 32] ^ 8);
+                                    }
+                                    result = new EncryptFileLogin().topLogin(userInfo);
+                                }
+                            }else{
+                                result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                            }
+                        }else{
+                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        }
+                    } else if (eventJson.getJSONObject("queryString").getString("saveData") != null &&
+                            eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null) {
+                        try {
+                            String saveData = new TripleDES().decryptMode(eventJson.getJSONObject("queryString").getString("saveData"));
+                            JSONObject saveDataJson = JSONObject.parseObject(saveData);
+                            UserInfo userInfo = new UserInfo();
+                            if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                                userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                            }
+                            if(eventJson.getJSONObject("queryString").getString("token") != null){
+                                userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                            }
+                            userInfo.setUserId(saveDataJson.getString("userId"));
+                            userInfo.setAuthKey(saveDataJson.getString("authKey"));
+                            userInfo.setSecretKey(saveDataJson.getString("secretKey"));
+                            userInfo.setCookie(new BasicCookieStore());
+                            Random rand = new Random(); //创建一个随机产生数类Scanner
+                            int port = rand.nextInt(2099 - 100 + 1) + 100;
+                            userInfo.setPort("ip"+port);
+                            String top = new GetRequest().sendGet(userInfo,"https://"+userCreateServer+"/gamedata/top?appVer=2.44.0");
+                            JSONObject res = JSONObject.parseObject(top);
+                            if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
+                                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
+                                    String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                                    Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
+                                    Matcher matcher = pattern.matcher(newVersion);
+                                    if(matcher.find()){
+                                        appVer = matcher.group(1);
+                                        top = new GetRequest().sendGet(userInfo,"https://"+userCreateServer+"/gamedata/top?appVer="+matcher.group(1));
+                                        res = JSONObject.parseObject(top);
+                                        dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
+                                        dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
+                                        String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
+                                        Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
+                                        assetbundleFolder = (String) map.get("folderName");
+                                        CRC32 crc32 = new CRC32();
+                                        crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
+                                        dataServerFolderCrc = String.valueOf(crc32.getValue());
+                                        animalName = (String) map.get("animalName");
+                                        byte[] a = EncryptFile.animalName.getBytes();
+                                        key = new byte[32];
+                                        for (int i = 0; i < 32; i++) {
+                                            key[i] = (byte) (a[i] ^ 4);
+                                        }
+                                        iv = new byte[a.length - 32];
+                                        for (int i = 0; i < a.length - 32; i++) {
+                                            iv[i] = (byte) (a[i + 32] ^ 8);
+                                        }
+                                        result = new EncryptFileLogin().topLogin(userInfo);
+                                    }
+                                }else{
+                                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                                }
+                            }else{
+                                result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                            }
+                        } catch (Exception e) {
+                            result = "存档码解析错误！";
+                        }
+                    } else {
+                        result = "请求参数错误！";
+                    }
+                }else if(eventJson.getJSONObject("queryString").getString("userCreateServer").toLowerCase().equals("us")){
+                    userCreateServer = "game.fate-go.us";
+                    mouseInfoMsgPackKey = "nn33CYId2J1ggv0bYDMbYuZ60m4GZt5P";
+                    filePath = "/mnt/us/";
+                    if (eventJson.getJSONObject("queryString").getString("key") != null && eventJson.getJSONObject("queryString").getString("pwd") != null && eventJson.getJSONObject("queryString").getString("key").length() == 10 && eventJson.getJSONObject("queryString").getString("pwd").length() >= 4 &&
+                            eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null && eventJson.getJSONObject("queryString").getString("saveData") == null) {
+                        UserInfo userInfo = new UserInfo();
+                        if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                            userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                        }
+                        if(eventJson.getJSONObject("queryString").getString("token") != null){
+                            userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                        }
+                        userInfo.setCookie(new BasicCookieStore());
+                        Random rand = new Random(); //创建一个随机产生数类Scanner
+                        int port = rand.nextInt(2099 - 100 + 1) + 100;
+                        userInfo.setPort("ip"+port);
+                        long nowTime = System.currentTimeMillis() / 1000L;
+                        String itunes = new GetRequest().sendGet(userInfo,"https://itunes.apple.com/us/lookup?bundleId=com.aniplex.fategrandorder.en&time="+nowTime);
+                        JSONObject res = JSONObject.parseObject(itunes);
+                        appVer = res.getJSONArray("results").getJSONObject(0).getString("version");
+                        itunes = new GetRequest().sendGet2(userInfo,"https://game.fate-go.us/gamedata/top?appVer="+appVer);
+                        res = JSONObject.parseObject(itunes);
+                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").containsKey("action") && res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("maint")) {
+                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        }else{
                             dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
                             dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
                             String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
@@ -82,39 +263,31 @@ public class EncryptFile {
                                 result = new ContinueKeyLogin().regist(userInfo);
                             }
                         }
-                    }else{
-                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                    }
-                }else{
-                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                }
-            } else if (eventJson.getJSONObject("queryString").getString("userId") != null && eventJson.getJSONObject("queryString").getString("authKey") != null && eventJson.getJSONObject("queryString").getString("secretKey") != null && eventJson.getJSONObject("queryString").getString("userId").length() >= 7 &&
-                    eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("encryptFile") == null) {
-                UserInfo userInfo = new UserInfo();
-                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
-                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
-                }
-                if(eventJson.getJSONObject("queryString").getString("token") != null){
-                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
-                }
-                userInfo.setUserId(eventJson.getJSONObject("queryString").getString("userId"));
-                userInfo.setAuthKey(eventJson.getJSONObject("queryString").getString("authKey"));
-                userInfo.setSecretKey(eventJson.getJSONObject("queryString").getString("secretKey"));
-                userInfo.setCookie(new BasicCookieStore());
-                Random rand = new Random(); //创建一个随机产生数类Scanner
-                int port = rand.nextInt(2099 - 100 + 1) + 100;
-                userInfo.setPort("ip"+port);
-                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
-                JSONObject res = JSONObject.parseObject(top);
-                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
-                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
-                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
-                        Matcher matcher = pattern.matcher(newVersion);
-                        if(matcher.find()){
-                            appVer = matcher.group(1);
-                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
-                            res = JSONObject.parseObject(top);
+                    } else if (eventJson.getJSONObject("queryString").getString("userId") != null && eventJson.getJSONObject("queryString").getString("authKey") != null && eventJson.getJSONObject("queryString").getString("secretKey") != null && eventJson.getJSONObject("queryString").getString("userId").length() >= 7 &&
+                            eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("saveData") == null) {
+                        UserInfo userInfo = new UserInfo();
+                        if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                            userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                        }
+                        if(eventJson.getJSONObject("queryString").getString("token") != null){
+                            userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                        }
+                        userInfo.setUserId(eventJson.getJSONObject("queryString").getString("userId"));
+                        userInfo.setAuthKey(eventJson.getJSONObject("queryString").getString("authKey"));
+                        userInfo.setSecretKey(eventJson.getJSONObject("queryString").getString("secretKey"));
+                        userInfo.setCookie(new BasicCookieStore());
+                        Random rand = new Random(); //创建一个随机产生数类Scanner
+                        int port = rand.nextInt(2099 - 100 + 1) + 100;
+                        userInfo.setPort("ip"+port);
+                        long nowTime = System.currentTimeMillis() / 1000L;
+                        String itunes = new GetRequest().sendGet(userInfo,"https://itunes.apple.com/us/lookup?bundleId=com.aniplex.fategrandorder.en&time="+nowTime);
+                        JSONObject res = JSONObject.parseObject(itunes);
+                        appVer = res.getJSONArray("results").getJSONObject(0).getString("version");
+                        itunes = new GetRequest().sendGet2(userInfo,"https://game.fate-go.us/gamedata/top?appVer="+appVer);
+                        res = JSONObject.parseObject(itunes);
+                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").containsKey("action") && res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("maint")) {
+                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        }else{
                             dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
                             dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
                             String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
@@ -133,44 +306,40 @@ public class EncryptFile {
                             for (int i = 0; i < a.length - 32; i++) {
                                 iv[i] = (byte) (a[i + 32] ^ 8);
                             }
-                            result = new EncryptFileLogin().topLogin(userInfo);
+                            if(userInfo.getToken() == null){
+                                result = "token参数不能为空，用户未登录！";
+                            }else {
+                                result = new EncryptFileLogin().topLogin(userInfo);
+                            }
                         }
-                    }else{
-                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                    }
-                }else{
-                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                }
-            } else if (eventJson.getJSONObject("queryString").getString("encryptFile") != null &&
-                    eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null) {
-                try {
-                    String encryptFile = new TripleDES().decryptMode(eventJson.getJSONObject("queryString").getString("encryptFile"));
-                    JSONObject encryptFileJson = JSONObject.parseObject(encryptFile);
-                    UserInfo userInfo = new UserInfo();
-                    if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
-                        userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
-                    }
-                    if(eventJson.getJSONObject("queryString").getString("token") != null){
-                        userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
-                    }
-                    userInfo.setUserId(encryptFileJson.getString("userId"));
-                    userInfo.setAuthKey(encryptFileJson.getString("authKey"));
-                    userInfo.setSecretKey(encryptFileJson.getString("secretKey"));
-                    userInfo.setCookie(new BasicCookieStore());
-                    Random rand = new Random(); //创建一个随机产生数类Scanner
-                    int port = rand.nextInt(2099 - 100 + 1) + 100;
-                    userInfo.setPort("ip"+port);
-                    String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
-                    JSONObject res = JSONObject.parseObject(top);
-                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
-                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
-                            String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                            Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
-                            Matcher matcher = pattern.matcher(newVersion);
-                            if(matcher.find()){
-                                appVer = matcher.group(1);
-                                top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
-                                res = JSONObject.parseObject(top);
+                    } else if (eventJson.getJSONObject("queryString").getString("saveData") != null &&
+                            eventJson.getJSONObject("queryString").getString("key") == null && eventJson.getJSONObject("queryString").getString("pwd") == null && eventJson.getJSONObject("queryString").getString("userId") == null && eventJson.getJSONObject("queryString").getString("authKey") == null && eventJson.getJSONObject("queryString").getString("secretKey") == null) {
+                        try {
+                            String saveData = new TripleDES().decryptMode(eventJson.getJSONObject("queryString").getString("saveData"));
+                            JSONObject saveDataJson = JSONObject.parseObject(saveData);
+                            UserInfo userInfo = new UserInfo();
+                            if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
+                                userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
+                            }
+                            if(eventJson.getJSONObject("queryString").getString("token") != null){
+                                userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
+                            }
+                            userInfo.setUserId(saveDataJson.getString("userId"));
+                            userInfo.setAuthKey(saveDataJson.getString("authKey"));
+                            userInfo.setSecretKey(saveDataJson.getString("secretKey"));
+                            userInfo.setCookie(new BasicCookieStore());
+                            Random rand = new Random(); //创建一个随机产生数类Scanner
+                            int port = rand.nextInt(2099 - 100 + 1) + 100;
+                            userInfo.setPort("ip"+port);
+                            long nowTime = System.currentTimeMillis() / 1000L;
+                            String itunes = new GetRequest().sendGet(userInfo,"https://itunes.apple.com/us/lookup?bundleId=com.aniplex.fategrandorder.en&time="+nowTime);
+                            JSONObject res = JSONObject.parseObject(itunes);
+                            appVer = res.getJSONArray("results").getJSONObject(0).getString("version");
+                            itunes = new GetRequest().sendGet2(userInfo,"https://game.fate-go.us/gamedata/top?appVer="+appVer);
+                            res = JSONObject.parseObject(itunes);
+                            if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").containsKey("action") && res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("maint")) {
+                                result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                            }else{
                                 dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
                                 dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
                                 String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
@@ -189,19 +358,23 @@ public class EncryptFile {
                                 for (int i = 0; i < a.length - 32; i++) {
                                     iv[i] = (byte) (a[i + 32] ^ 8);
                                 }
-                                result = new EncryptFileLogin().topLogin(userInfo);
+                                if(userInfo.getToken() == null){
+                                    result = "token参数不能为空，用户未登录！";
+                                }else {
+                                    result = new EncryptFileLogin().topLogin(userInfo);
+                                }
                             }
-                        }else{
-                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                        } catch (Exception e) {
+                            result = "存档码解析错误！";
                         }
-                    }else{
-                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
+                    } else {
+                        result = "请求参数错误！";
                     }
-                } catch (Exception e) {
-                    result = "存档码解析错误！";
+                }else{
+                    result = "目前仅支持jp、us区服！";
                 }
-            } else {
-                result = "请求参数错误！";
+            }else{
+                result = "未指定区服！";
             }
         } else if (eventJson.getString("httpMethod").equals("POST")) {
             String body = eventJson.getString("body");
@@ -226,177 +399,7 @@ public class EncryptFile {
                     }
                 }
             }
-            if (obj.getString("key") != null && obj.getString("pwd") != null && obj.getString("key").length() == 10 && obj.getString("pwd").length() >= 4 &&
-                    obj.getString("userId") == null && obj.getString("authKey") == null && obj.getString("secretKey") == null && obj.getString("encryptFile") == null) {
-                UserInfo userInfo = new UserInfo();
-                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
-                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
-                }
-                if(eventJson.getJSONObject("queryString").getString("token") != null){
-                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
-                }
-                userInfo.setCookie(new BasicCookieStore());
-                Random rand = new Random(); //创建一个随机产生数类Scanner
-                int port = rand.nextInt(2099 - 100 + 1) + 100;
-                userInfo.setPort("ip"+port);
-                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
-                JSONObject res = JSONObject.parseObject(top);
-                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
-                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
-                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
-                        Matcher matcher = pattern.matcher(newVersion);
-                        if(matcher.find()){
-                            appVer = matcher.group(1);
-                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
-                            res = JSONObject.parseObject(top);
-                            dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                            dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                            String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                            Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                            assetbundleFolder = (String) map.get("folderName");
-                            CRC32 crc32 = new CRC32();
-                            crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                            dataServerFolderCrc = String.valueOf(crc32.getValue());
-                            animalName = (String) map.get("animalName");
-                            byte[] a = EncryptFile.animalName.getBytes();
-                            key = new byte[32];
-                            for (int i = 0; i < 32; i++) {
-                                key[i] = (byte) (a[i] ^ 4);
-                            }
-                            iv = new byte[a.length - 32];
-                            for (int i = 0; i < a.length - 32; i++) {
-                                iv[i] = (byte) (a[i + 32] ^ 8);
-                            }
-                            userInfo.setKey(obj.getString("key"));
-                            userInfo.setPass(obj.getString("pwd"));
-                            if(userInfo.getToken() == null){
-                                result = "token参数不能为空，用户未登录！";
-                            }else {
-                                result = new ContinueKeyLogin().regist(userInfo);
-                            }
-                        }
-                    }else{
-                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                    }
-                }else{
-                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                }
-            } else if (obj.getString("userId") != null && obj.getString("authKey") != null && obj.getString("secretKey") != null && obj.getString("userId").length() >= 7 &&
-                    obj.getString("key") == null && obj.getString("pwd") == null && obj.getString("encryptFile") == null) {
-                UserInfo userInfo = new UserInfo();
-                if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
-                    userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
-                }
-                if(eventJson.getJSONObject("queryString").getString("token") != null){
-                    userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
-                }
-                userInfo.setUserId(obj.getString("userId"));
-                userInfo.setAuthKey(obj.getString("authKey"));
-                userInfo.setSecretKey(obj.getString("secretKey"));
-                userInfo.setCookie(new BasicCookieStore());
-                Random rand = new Random(); //创建一个随机产生数类Scanner
-                int port = rand.nextInt(2099 - 100 + 1) + 100;
-                userInfo.setPort("ip"+port);
-                String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
-                JSONObject res = JSONObject.parseObject(top);
-                if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
-                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
-                        String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                        Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
-                        Matcher matcher = pattern.matcher(newVersion);
-                        if(matcher.find()){
-                            appVer = matcher.group(1);
-                            top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
-                            res = JSONObject.parseObject(top);
-                            dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                            dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                            String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                            Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                            assetbundleFolder = (String) map.get("folderName");
-                            CRC32 crc32 = new CRC32();
-                            crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                            dataServerFolderCrc = String.valueOf(crc32.getValue());
-                            animalName = (String) map.get("animalName");
-                            byte[] a = EncryptFile.animalName.getBytes();
-                            key = new byte[32];
-                            for (int i = 0; i < 32; i++) {
-                                key[i] = (byte) (a[i] ^ 4);
-                            }
-                            iv = new byte[a.length - 32];
-                            for (int i = 0; i < a.length - 32; i++) {
-                                iv[i] = (byte) (a[i + 32] ^ 8);
-                            }
-                            result = new EncryptFileLogin().topLogin(userInfo);
-                        }
-                    }else{
-                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                    }
-                }else{
-                    result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                }
-            } else if (obj.getString("encryptFile") != null &&
-                    obj.getString("key") == null && obj.getString("pwd") == null && obj.getString("userId") == null && obj.getString("authKey") == null && obj.getString("secretKey") == null) {
-                try {
-                    String encryptFile = new TripleDES().decryptMode(obj.getString("encryptFile"));
-                    JSONObject encryptFileJson = JSONObject.parseObject(encryptFile);
-                    UserInfo userInfo = new UserInfo();
-                    if(eventJson.getJSONObject("queryString").getString("newpwd") != null){
-                        userInfo.setNewPass(eventJson.getJSONObject("queryString").getString("newpwd"));
-                    }
-                    if(eventJson.getJSONObject("queryString").getString("token") != null){
-                        userInfo.setToken(eventJson.getJSONObject("queryString").getString("token"));
-                    }
-                    userInfo.setUserId(encryptFileJson.getString("userId"));
-                    userInfo.setAuthKey(encryptFileJson.getString("authKey"));
-                    userInfo.setSecretKey(encryptFileJson.getString("secretKey"));
-                    userInfo.setCookie(new BasicCookieStore());
-                    Random rand = new Random(); //创建一个随机产生数类Scanner
-                    int port = rand.nextInt(2099 - 100 + 1) + 100;
-                    userInfo.setPort("ip"+port);
-                    String top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer=2.44.0");
-                    JSONObject res = JSONObject.parseObject(top);
-                    if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action") != null) {
-                        if (res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("action").equals("app_version_up")) {
-                            String newVersion = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                            Pattern pattern = Pattern.compile(".*新ver.：(.*)、現.*");
-                            Matcher matcher = pattern.matcher(newVersion);
-                            if(matcher.find()){
-                                appVer = matcher.group(1);
-                                top = new GetRequest().sendGet(userInfo,"https://game.fate-go.jp/gamedata/top?appVer="+matcher.group(1));
-                                res = JSONObject.parseObject(top);
-                                dataVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dataVer");
-                                dateVer = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("dateVer");
-                                String assetbundle = res.getJSONArray("response").getJSONObject(0).getJSONObject("success").getString("assetbundle");
-                                Map<String,Object> map = mouseInfoMsgPack(Base64.getDecoder().decode(assetbundle));
-                                assetbundleFolder = (String) map.get("folderName");
-                                CRC32 crc32 = new CRC32();
-                                crc32.update(assetbundleFolder.getBytes(StandardCharsets.UTF_8));
-                                dataServerFolderCrc = String.valueOf(crc32.getValue());
-                                animalName = (String) map.get("animalName");
-                                byte[] a = EncryptFile.animalName.getBytes();
-                                key = new byte[32];
-                                for (int i = 0; i < 32; i++) {
-                                    key[i] = (byte) (a[i] ^ 4);
-                                }
-                                iv = new byte[a.length - 32];
-                                for (int i = 0; i < a.length - 32; i++) {
-                                    iv[i] = (byte) (a[i + 32] ^ 8);
-                                }
-                                result = new EncryptFileLogin().topLogin(userInfo);
-                            }
-                        }else{
-                            result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                        }
-                    }else{
-                        result = res.getJSONArray("response").getJSONObject(0).getJSONObject("fail").getString("detail");
-                    }
-                } catch (Exception e) {
-                    result = "存档码解析错误！";
-                }
-            } else {
-                result = "请求参数错误！";
-            }
+            result = "请使用GET请求方式！";
         } else {
             result = "不支持的请求方式！";
         }
@@ -419,7 +422,7 @@ public class EncryptFile {
     public static Map<String,Object> mouseInfoMsgPack(byte[] data){
         byte[] InfoTop = new byte[32];
         byte[] array = new byte[data.length - 32];
-        byte[] infoData = "W0Juh4cFJSYPkebJB9WpswNF51oa6Gm7".getBytes(StandardCharsets.UTF_8);
+        byte[] infoData = mouseInfoMsgPackKey.getBytes(StandardCharsets.UTF_8);
         System.arraycopy(data, 0, InfoTop, 0, 32);
         System.arraycopy(data, 32, array, 0, data.length - 32);
         return mouseHomeMsgPack(array, infoData, InfoTop);
